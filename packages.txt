@@ -1,3 +1,2 @@
-# System packages for Streamlit Community Cloud (OpenCV / OCR)
 libgl1
 libglib2.0-0
