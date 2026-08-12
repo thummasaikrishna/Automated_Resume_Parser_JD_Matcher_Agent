@@ -2,16 +2,23 @@
 
 Repo: https://github.com/thummasaikrishna/Automated_Resume_Parser_JD_Matcher_Agent
 
+## Critical: Python version
+
+In the Streamlit app **Advanced settings**, set **Python version to 3.12**.
+
+Do **not** leave the default on 3.13/3.14 — `rapidocr` / some ML wheels will fail.
+
+`runtime.txt` and `.python-version` are also set to 3.12 in the repo.
+
 ## Steps
 
-1. Open https://share.streamlit.io and sign in with GitHub (`thummasaikrishna`).
-2. Click **Create app** / **New app**.
-3. Set:
+1. Open https://share.streamlit.io and sign in with GitHub.
+2. App settings for `resumematcher2026` (or New app):
    - **Repository:** `thummasaikrishna/Automated_Resume_Parser_JD_Matcher_Agent`
    - **Branch:** `main`
    - **Main file path:** `streamlit_app.py`
-   - **App URL** (optional): `automated-resume-parser-jd-matcher-agent`
-4. Open **Advanced settings → Secrets** and paste (use your real Groq key from local `.env`):
+   - **Python version:** `3.12`
+3. **Secrets:**
 
 ```toml
 GROQ_API_KEY = "paste_your_key_here"
@@ -20,11 +27,7 @@ USE_LOCAL_EMBEDDINGS = "true"
 LOCAL_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 ```
 
-5. Click **Deploy**.
-6. First build can take 5–15 minutes (torch / sentence-transformers / OCR models).
+4. **Reboot** / **Redeploy** the app.
+5. First build can take several minutes (sentence-transformers / OCR).
 
-Expected public URL pattern:
-
-`https://automated-resume-parser-jd-matcher-agent.streamlit.app`
-
-(or the custom subdomain Streamlit assigns)
+Public URL: `https://resumematcher2026.streamlit.app`

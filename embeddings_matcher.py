@@ -1,5 +1,8 @@
 """
 Vector embedding skill-match scoring and resume RAG retrieval.
+
+Uses pure cosine similarity over chunk embeddings (no FAISS),
+so Streamlit Cloud installs cleanly across Python versions.
 """
 
 from __future__ import annotations
@@ -11,7 +14,6 @@ from typing import Any, Iterable
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
 
 from llm_factory import build_embeddings
 
@@ -54,14 +56,18 @@ class ResumeVectorIndex:
         chunks = splitter.split_text(resume_text)
         if not chunks:
             chunks = [resume_text]
-        docs = [Document(page_content=c, metadata={"chunk_id": i}) for i, c in enumerate(chunks)]
-        self.vectorstore = FAISS.from_documents(docs, self.embeddings)
-        self.chunk_texts = [d.page_content for d in docs]
-        # Pre-embed chunks for fast max-similarity skill scoring.
+        self.docs = [Document(page_content=c, metadata={"chunk_id": i}) for i, c in enumerate(chunks)]
+        self.chunk_texts = [d.page_content for d in self.docs]
         self._chunk_vectors = self.embeddings.embed_documents(self.chunk_texts)
 
     def retrieve(self, query: str, k: int = 4) -> list[Document]:
-        return self.vectorstore.similarity_search(query, k=k)
+        q_vec = self.embeddings.embed_query(query)
+        scored = [
+            (cosine_similarity(q_vec, vec), doc)
+            for doc, vec in zip(self.docs, self._chunk_vectors)
+        ]
+        scored.sort(key=lambda x: x[0], reverse=True)
+        return [doc for _, doc in scored[: max(1, k)]]
 
     def retrieve_context(self, query: str, k: int = 4) -> str:
         docs = self.retrieve(query, k=k)
@@ -76,7 +82,6 @@ class ResumeVectorIndex:
         if not skill_clean:
             return SkillSimilarity(skill=skill, score_0_100=0.0, best_chunk="", present=False)
 
-        # Also try a retrieval-focused query for better grounding.
         query = f"Experience, projects, and proficiency with {skill_clean}"
         q_vec = self.embeddings.embed_query(query)
 
@@ -88,13 +93,11 @@ class ResumeVectorIndex:
                 best_sim = sim
                 best_chunk = chunk
 
-        # Lexical boost for exact / near-exact mentions (improves precision).
         norm_skill = _normalize_skill(skill_clean)
         resume_norm = _normalize_skill(" ".join(self.chunk_texts))
         if norm_skill and norm_skill in resume_norm:
             best_sim = max(best_sim, 0.88)
         else:
-            # Token overlap boost for multi-word skills
             tokens = [t for t in norm_skill.split() if len(t) > 2]
             if tokens and all(t in resume_norm for t in tokens):
                 best_sim = max(best_sim, 0.72)
@@ -123,8 +126,6 @@ def compute_match_percentage(
     """
     Weighted embedding match:
       overall = must_weight * avg(must) + nice_weight * avg(nice)
-
-    Returns (overall_0_100, all_skill_sims, missing, partial).
     """
     must = [s.strip() for s in must_have if s and s.strip()]
     nice = [s.strip() for s in nice_to_have if s and s.strip()]

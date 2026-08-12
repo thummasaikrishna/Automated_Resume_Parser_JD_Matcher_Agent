@@ -37,11 +37,10 @@ def test_tech_stack_in_requirements():
         "langchain",
         "pydantic",
         "streamlit",
-        "faiss",
         "sentence-transformers",
         "pandas",
         "python-dotenv",
-        "pytest",
+        "numpy",
     ]:
         assert pkg in req, f"{pkg} missing from requirements"
 
@@ -76,7 +75,7 @@ def test_embeddings_match_scoring_present():
     src = (ROOT / "embeddings_matcher.py").read_text(encoding="utf-8")
     assert "cosine_similarity" in src
     assert "compute_match_percentage" in src
-    assert "FAISS" in src
+    assert "ResumeVectorIndex" in src
 
 
 def test_streamlit_entrypoint_parses():
