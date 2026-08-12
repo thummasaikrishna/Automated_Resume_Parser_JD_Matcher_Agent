@@ -6,7 +6,9 @@ Upload a **PDF / image resume** and a **job description** to get:
 - **experience gaps** with retrieved evidence
 - **structured JSON** (Pydantic) and improvement tips
 
-Live app entrypoint: `streamlit_app.py`
+**Live demo:** [https://resumematcher2026.streamlit.app/](https://resumematcher2026.streamlit.app/)
+
+Local entrypoint: `streamlit_app.py`
 
 ## Tech stack
 
