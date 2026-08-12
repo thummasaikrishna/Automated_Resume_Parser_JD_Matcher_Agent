@@ -17,7 +17,7 @@ Live app entrypoint: `streamlit_app.py`
 | LLM Framework | **LangChain** | Parsing, embeddings, prompts |
 | LLM | **Groq** | Resume/JD analysis & recommendations |
 | Embeddings | **HuggingFace** MiniLM | Semantic skill matching |
-| Vector Store | **FAISS** | Store/search resume chunks |
+| Retrieval | **Cosine similarity** | Rank resume chunks (no FAISS) |
 | Structured Output | **Pydantic** | Validate evaluation JSON |
 | UI | **Streamlit** | Web interface |
 | Similarity | **Cosine Similarity** | Match score |
@@ -50,32 +50,21 @@ streamlit run streamlit_app.py
 
 ## Deploy on Streamlit Community Cloud
 
-1. Push this repo to GitHub (`Automated_Resume_Parser_JD_Matcher_Agent`).
-2. Go to [share.streamlit.io](https://share.streamlit.io) → **New app**.
-3. Select the repo, branch `main`, main file `streamlit_app.py`.
-4. Under **Advanced settings → Secrets**, paste:
+See [DEPLOY.md](DEPLOY.md). **Critical:** in app **Advanced settings**, set **Python to 3.12** (Cloud may ignore `runtime.txt`), then reboot.
 
-```toml
-GROQ_API_KEY = "your_groq_api_key_here"
-GROQ_MODEL = "llama-3.3-70b-versatile"
-USE_LOCAL_EMBEDDINGS = "true"
-LOCAL_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-```
-
-5. Deploy. First boot may take several minutes (embeddings + OCR models).
-
-`packages.txt` installs Linux libs needed by OpenCV/OCR on Streamlit Cloud.
+There is **no** `packages.txt` — `opencv-python-headless` works without apt packages. Do **not** add `libglib2.0-0` (breaks on Debian Trixie).
 
 ## Project layout
 
 ```
 streamlit_app.py       # UI
 matcher_agent.py       # Agent pipeline
-embeddings_matcher.py  # FAISS + cosine scoring
+embeddings_matcher.py  # Pure cosine RAG + skill scoring
 pdf_parser.py          # PyMuPDF / pypdf / OCR
 agent_models.py        # Pydantic schemas
 llm_factory.py         # Groq + embeddings (+ Streamlit secrets)
-packages.txt           # Streamlit Cloud system packages
+runtime.txt            # python-3.12 hint for Cloud
+.python-version        # 3.12
 .streamlit/            # Theme + secrets example
 tests/                 # pytest suite
 ```

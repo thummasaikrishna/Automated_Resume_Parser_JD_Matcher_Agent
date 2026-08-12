@@ -10,6 +10,10 @@ Do **not** leave the default on 3.13/3.14 — `rapidocr` / some ML wheels will f
 
 `runtime.txt` and `.python-version` are also set to 3.12 in the repo.
 
+## packages.txt
+
+Do **not** restore `packages.txt` with `libglib2.0-0` (fails on Debian Trixie). Prefer no `packages.txt` while `opencv-python-headless` works without apt packages.
+
 ## Steps
 
 1. Open https://share.streamlit.io and sign in with GitHub.
